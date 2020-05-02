@@ -1,55 +1,109 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>우아한로또코스</title>
-    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="main.css">
-  </head>
-  <body>
-    <div class="container">
-      <h1>우아한로또코스</h1>
-      <form id="lotto-store">
-        <div>
-          <label for="input-lotto-round">로또 회차</label>
-          <input type="number" id="input-lotto-round">회
-        </div>
-        <div>
-          <label for="input-cash-amount">얼마치를 사시겠습니까?</label>
-          <input type="number" id="input-cash-amount">원
-        </div>
-        <button type="submit">구매</button>
-      </form>
-      <div id="lotto-result">
-        <div class="lotto">
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning"></div>
-          <div class="lotto-number winning bonus-number"></div>
-        </div>
-      </div>
-      <div class="lotto-status">
-        <h3>구매한 로또는 다음과 같습니다. 총 <span id="lotto-quantity">n</span>개</h3>
-      </div>
-      <div id="lottos">
-        <div class="lotto">
-          <div class="lotto-number"></div>
-          <div class="lotto-number"></div>
-          <div class="lotto-number"></div>
-          <div class="lotto-number"></div>
-          <div class="lotto-number"></div>
-          <div class="lotto-number"></div>
-        </div>
-      </div>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>우아한로또코스</title>
+  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div class="container">
+  <h1>우아한로또코스</h1>
+  <form id="lotto-store">
+    <div>
+      <label for="input-lotto-round">로또 회차</label>
+      <input type="number" id="input-lotto-round">회
     </div>
-    <script>
+    <div>
+      <label for="input-cash-amount">얼마치를 사시겠습니까?</label>
+      <input type="number" id="input-cash-amount">원
+    </div>
+    <button type="submit">구매</button>
+  </form>
+  <div id="lotto-result">
+    <div class="lotto">
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning"></div>
+      <div class="lotto-number winning bonus-number"></div>
+    </div>
+  </div>
+  <div class="lotto-status">
+    <h3>구매한 로또는 다음과 같습니다. 총 <span id="lotto-quantity">n</span>개</h3>
+  </div>
+  <div id="lottos">
+    <div class="lotto">
+      <div class="lotto-number"></div>
+      <div class="lotto-number"></div>
+      <div class="lotto-number"></div>
+      <div class="lotto-number"></div>
+      <div class="lotto-number"></div>
+      <div class="lotto-number"></div>
+    </div>
+  </div>
+</div>
+<script>
+  function generateLotto() {
+    const lottos = [];
+    const NUMBERS = [];
+    for (let i = 1; i < 46; i++) {
+      NUMBERS.push(i);
+    }
 
-    </script>
-  </body>
+    while(lottos.length!==6){
+      let rand = Math.floor(Math.random()*45)+1;
+      lottos.push(rand);
+    }
+    return lottos;
+  }
+  let form = document.querySelector("form");
+
+  function createLottos(lottoCount, lottosHtml) {
+    for (let i = 0; i < lottoCount; i++) {
+      lottosHtml += "<div class='lotto'>";
+      let lottosNumber = generateLotto()
+      .map(number => `<div class='lotto-number'>${number}</div>`)
+      .concat()
+      .join("");
+      lottosHtml += lottosNumber;
+      lottosHtml += "</div>";
+    }
+    return lottosHtml;
+  }
+
+  function createWinningLotto(parsingData, winningLotto) {
+    for (let key of parsingData.winningNumbers) {
+      winningLotto.innerText = key;
+      winningLotto = winningLotto.nextSibling.nextSibling;
+    }
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    let lottoRound = document.querySelector("#input-lotto-round").value;
+    let cashAmount = document.querySelector("#input-cash-amount").value;
+    if(lottoRound<=0 || lottoRound>909 || cashAmount % 1000 !== 0){
+      alert("sex");
+      document.querySelector("#lottos .lotto").innerHTML = "<div style='color: red'>sex</div>";
+      throw new Error("sex");
+    }
+    let lottoCount = cashAmount/1000;
+    document.querySelector("#lotto-quantity").innerText = lottoCount;
+    let lottoData = await fetch("http://localhost:8000/lotto/" + lottoRound);
+    let parsingData = await lottoData.json();
+    let winningLotto = document.querySelector(".winning");
+    createWinningLotto(parsingData, winningLotto);
+    document.querySelector(".bonus-number").innerText = parsingData.bonus;
+    let lottosHtml = "";
+    lottosHtml = createLottos(lottoCount, lottosHtml);
+    document.querySelector("#lottos").innerHTML=lottosHtml;
+  });
+</script>
+</body>
 </html>
