@@ -89,9 +89,9 @@
     let lottoRound = document.querySelector("#input-lotto-round").value;
     let cashAmount = document.querySelector("#input-cash-amount").value;
     if(lottoRound<=0 || lottoRound>909 || cashAmount % 1000 !== 0){
-      alert("sex");
-      document.querySelector("#lottos .lotto").innerHTML = "<div style='color: red'>sex</div>";
-      throw new Error("sex");
+      alert("Error");
+      document.querySelector("#lottos .lotto").innerHTML = "<div style='color: red'>입력 값 오류</div>";
+      throw new Error();
     }
     let lottoCount = cashAmount/1000;
     document.querySelector("#lotto-quantity").innerText = lottoCount;
